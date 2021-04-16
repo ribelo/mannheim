@@ -1,0 +1,68 @@
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+@keyframes spinner {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
+}
+
+.spinner {
+    animation: spinner 1.5s linear infinite;
+}
+
+.transition-opacity-enter {
+    opacity: 0.01;
+}
+
+.transition-opacity-enter-active {
+    opacity: 1;
+    transition: opacity 200ms ease-in;
+}
+
+.transition-opacity-exit {
+    opacity: 1;
+}
+
+.transition-opacity-exit-active {
+    opacity: 0.01;
+    transition: opacity 200ms ease-in;
+}
+
+.modal-enter {
+    opacity: 0.01;
+}
+
+.modal-enter-active {
+    opacity: 1;
+    transition: opacity 200ms ease-in;
+}
+
+.modal-exit {
+    opacity: 1;
+}
+
+.modal-exit-active {
+    opacity: 0.01;
+    transition: opacity 200ms ease-in;
+}
+
+.notification-enter {
+    transform: translate(24rem, 0);
+}
+
+.notification-enter-active {
+    transform:  translate(0, 0);
+    transition: transform 200ms ease-in;
+}
+
+.notification-exit {
+    transform: translate(0, 0);
+}
+
+.notification-exit-active {
+    transform:  translate(24rem, 0);
+    transition: transform 200ms ease-in;
+}

@@ -1,0 +1,25 @@
+;; shadow-cljs configuration
+{:deps {:aliases [:cljs]}
+ :builds
+ {:electron {:target           :node-script
+             :output-to        "resources/electron.js"
+             :main             electron.core/main
+             :compiler-options {:optimizations :simple}}
+  :app      {:target     :browser
+             :output-dir "resources/public/js"
+             :asset-path "/js"
+             :modules    {:shared {:entries []}
+                          :app    {:init-fn    mannheim.core/init
+                                   :depends-on #{:shared}
+                                   }
+                          :worker {:init-fn    mannheim.worker/init
+                                   :depends-on #{:shared}
+                                   :web-worker true}
+                          }
+             :dev        {:compiler-options {:closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
+                                             :infer-extens    :auto
+                                             :externs         ["datascript/externs.js"]}}
+             :devtools   {:after-load     mannheim.core/mount-components
+                          :watch-dir      "resources/public"
+                          :browser-inject :app
+                          :preloads [devtools.preload]}}}}
