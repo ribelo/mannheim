@@ -10,42 +10,41 @@
    [cuerdas.core :as str]
    [datascript.core :as d]
    [mannheim.init :as init]
-   [mannheim.payments.events :as p.evt]
-   [mannheim.payments.subs :as p.sub]
    [re-frame.core :as rf]
    [reagent.core :as r]
    [reagent.ratom :as ra]
-   [taoensso.encore :as e]))
+   [taoensso.encore :as enc]))
 
 (defn button
   ([text]
    (button {} text))
-  ([params text]
-   [:div.px-2.py-1.mx-2.bg-nord-0.text-nord-4.hover:text-nord-7.font-medium.text-center.rounded.shadow.cursor-pointer.border.border-gray-900.transition.duration-200
-    params
-    text]))
+  ([{:keys [class] :as params} text]
+   [:div (merge {:class ["flex px-4 py-1 bg-nord-0 text-nord-4 font-medium"
+                         "outline-none focus:ring ring-nord-7 hover:bg-nord-7"
+                         "rounded shadow cursor-pointer border border-gray-900"
+                         "transition duration-150" class]}
+                (dissoc params :class))
+    [:div {:class "m-auto"} text]]))
 
-(defn modal [{:keys [show? close title bg class] :as params} content]
-  [:> CSSTransition {:in              @show?
+(defn modal [{:keys [show?_ close title bg class] :as params} content]
+  [:> CSSTransition {:in              (enc/some? @show?_)
                      :timeout         200
                      :unmount-on-exit true
                      :class-names     "modal"}
    (fn [_]
      (r/as-element
       ^{:key :modal}
-      [:div.fixed.flex.inset-0.w-full.h-full
-       [:div.absolute.inset-0.w-full.h-full.bg-nord-0.opacity-25
-        {:on-click close}]
-       [:div.min-h-24.min-w-1|6.m-auto.z-40.shadow
-        {:class [ (if bg bg :bg-nord-3)]}
-        [:div.border-b.border-nord-0
-         {:class :bg-nord-3}
+      [:div {:class "fixed flex inset-0 w-full h-full"}
+       [:div {:class "absolute inset-0 w-full h-full bg-nord-0 opacity-25"
+              :on-click close}]
+       [:div {:class ["min-h-24 m-auto z-40 shadow" (if bg bg "bg-nord-3")]}
+        [:div {:class "border-b border-nord-0 bg-nord-3"}
          (when title
-           [:div.px-4.py-2.flex.items-center
-            [:div.flex-1.text-xl.font-medium.tracking-wider.text-nord-4
+           [:div {:class "px-4 py-2 flex items-center"}
+            [:div {:class "flex-1 text-xl font-medium tracking-wider text-nord-4"}
              title]
-            [:> x-icon {:class    [:text-nord-4 :cursor-pointer :hover:text-nord-11
-                                   :transition :duration-200 :easy-in-out]
+            [:> x-icon {:class    "text-nord-4 cursor-pointer hover:text-nord-11
+                                   transition duration-150 easy-in-out"
                         :on-click close}]])]
-        [:div.px-4.py-2
+        [:div {:class "px-4 py-2"}
          content]]]))])

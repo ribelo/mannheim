@@ -12,13 +12,13 @@
 
 (defn parse-document-value [s]
   (if (not-empty s)
-    (as-> s s
-      (str/split s " ")
-      (partition-all 2 s)
+    (as-> s $
+      (str/split $ " ")
+      (partition-all 2 $)
       (mapv (fn [coll]
               (if (= (count coll) 2)
                 [(get fn-map (first coll) =) (or (e/as-?float (second coll)) 0.00)]
-                [= (or (e/as-?float (second coll)) 0.00)])) s))
+                [= (or (e/as-?float (second coll)) 0.00)])) $))
     [[not= 0.0]]))
 
 (defn transfer-date->pred [s filter]

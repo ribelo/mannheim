@@ -1,10 +1,14 @@
 (ns electron.core
-  (:require [cljs.nodejs :refer [require]]))
+  (:require
+   [cljs.nodejs :refer [require]]
+   [cognitect.transit :as t]))
 
 (def electron (js/require "electron"))
 (def app (.-app electron))
 (def browser-window (.-BrowserWindow electron))
 (def crash-reporter (.-crashReporter electron))
+(def electron-updater (js/require "electron-updater"))
+(def auto-updater (.-autoUpdater electron-updater))
 
 (def main-window (atom nil))
 
@@ -27,6 +31,7 @@
                                         ;(.log js/console (str "file://" js/__dirname "/public/index.html"))
                                         ;(.loadURL @main-window "http://localhost:3449/index.html")
   (.loadURL ^js/electron.BrowserWindow @main-window (str "file://" js/__dirname "/public/index.html"))
+  #_(.loadURL ^js/electron.BrowserWindow @main-window (str "http://localhost:8020/public/index.html"))
   (.on ^js/electron.BrowserWindow @main-window "closed" #(reset! main-window nil)))
 
                                         ;(.start crash-reporter
@@ -40,3 +45,16 @@
   (.on app "ready" init-browser)
   (.on app "window-all-closed" #(when-not (= js/process.platform "darwin")
                                   (.quit app))))
+
+(defn write-transit [s]
+  (t/write (t/writer :json) s))
+
+(defn read-transit [s]
+  (t/read (t/reader :json) s))
+
+;; (-> (.checkForUpdatesAndNotify auto-updater)
+;;     (.then #(println "success" %))
+;;     (.catch #(println "failute")))
+;; (defmulti ipc first)
+
+;; (defmethod ipc :check-for-updates)

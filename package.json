@@ -3,7 +3,13 @@
   "version": "0.0.6",
   "main": "resources/electron.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "shadow:watch": "shadow-cljs watch app",
+    "shadow:release": "shadow-cljs release app",
+    "postcss:build": "TAILWIND_MODE=build postcss src/css/style.css -o ./resources/public/css/main.css --verbose",
+    "postcss:watch": "TAILWIND_MODE=watch postcss src/css/style.css -o ./resources/public/css/main.css --verbose -w",
+    "postcss:release": "NODE_ENV=production postcss src/css/style.css -o ./resources/public/css/main.css --verbose",
+    "dev": "run-p -l *:watch",
+    "release": "run-s *:release"
   },
   "build": {
     "files": [
@@ -16,14 +22,16 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@headlessui/react": "^1.0.0",
     "date-fns": "2.19.0",
+    "electron-updater": "^4.3.9",
     "firebase": "^8.3.3",
     "ftp": "0.3.10",
     "highlight.js": "9.18.1",
-    "iconv-lite": "0.6.2",
+    "iconv-lite": "^0.6.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-feather": "2.0.9",
+    "react-feather": "^2.0.9",
     "react-highlight": "^0.14.0",
     "react-highlight.js": "1.0.7",
     "react-transition-group": "^4.4.1",
@@ -32,12 +40,15 @@
     "xregexp": "4.3.0"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "0.3.2",
+    "@tailwindcss/forms": "^0.3.2",
+    "@tailwindcss/jit": "^0.1.18",
     "autoprefixer": "^10.2.5",
+    "cssnano": "^5.0.1",
     "electron": "12.0.2",
-    "electron-builder": "22.10.5",
-    "postcss": "^8.2.9",
+    "electron-builder": "^22.10.5",
+    "postcss": "^8.2.12",
+    "postcss-cli": "^8.3.1",
     "shadow-cljs": "2.11.23",
-    "tailwindcss": "^2.0.4"
+    "tailwindcss": "^2.1.2"
   }
 }

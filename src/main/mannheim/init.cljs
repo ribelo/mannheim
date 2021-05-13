@@ -1,6 +1,6 @@
 (ns mannheim.init
   (:require
-   [reagent.ratom :as ra]
+   [reagent.ratom :as ra :refer [reaction]]
    [re-frame.core :as rf]
    [day8.re-frame.async-flow-fx]
    [cljs-bean.core :as bean :refer [->js ->clj]]
@@ -8,11 +8,19 @@
    [applied-science.js-interop :as j]
    [taoensso.timbre :as timbre]
    [ribelo.doxa :as dx]
+   [mannheim.worker.fx]
+   [mannheim.file-storage.fx]
+   [mannheim.file-storage.events]
    [mannheim.firebase.fx]
    [mannheim.firebase.events]
    [mannheim.db.core]
    [mannheim.db.fx]
-   [mannheim.db.events :as db.evt]))
+   [mannheim.db.events :as db.evt]
+   [mannheim.ui.subs]
+   [mannheim.ui.events]
+   [mannheim.auth.fx]
+   [mannheim.auth.subs]
+   [mannheim.auth.events]))
 
 (comment
   (j/call JSON :jsonParse (rc/inline "app-info.json"))
@@ -27,29 +35,32 @@
    (timbre/info ::set-boot-successful)
    {:fx [[:commit [:app [:dx/put [:app/id :settings] :boot-successful? true]]]]}))
 
-(rf/reg-sub
- ::boot-successful?
- (fn [db _]
-   (get-in db [:app/id :settings :boot-successful?])))
+(comment
+  (rf/dispatch [::set-boot-successful])
+  (dx/with-dx [dx_ :app]
+    @dx_))
 
-#_(rf/reg-event-fx
-   ::run-autosave
-   (fn [_ _]
-     {:dispatch-later [{:ms       (* 60 5000)
-                        :dispatch [:mannheim.file-storage.events/write]}
-                       {:ms       (* 60 5000)
-                        :dispatch [:mannheim.ui.events/add-notification
-                                   [:title   nil
-                                    :content "poprawnie zapisano dane"]]}
-                       {:ms       (* 60 5000)
-                        :dispatch [::run-autosave]}]}))
+(rf/reg-sub-raw
+ ::boot-successful?
+ (fn [_ _]
+   (dx/with-dx [dx_ :app]
+     (reaction
+      (get-in @dx_ [:app/id :settings :boot-successful?])))))
+
+
 
 (rf/reg-event-fx
  ::boot
  (fn [{:keys [db]} _]
    (let [app-info (j/call js/JSON :parse (rc/inline "app-info.json"))]
-     {:fx [[:dispatch                           [::db.evt/init-db]]
-           [:mannheim.firebase.fx/init-firebase app-info]]})))
+     {:fx [[:dispatch [::db.evt/init-db]]
+           [:mannheim.file-storage.fx/read :market]
+           [:mannheim.file-storage.fx/sync :market]
+           [:mannheim.firebase.fx/init-firebase app-info]
+           [:mannheim.firebase.fx/sync :market]
+           [:mannheim.firebase.fx/sync :users]
+           [:dispatch [::set-boot-successful]]
+           ]})))
 
 (comment
   (rf/dispatch [::boot])

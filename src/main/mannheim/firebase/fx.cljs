@@ -9,29 +9,28 @@
    [ribelo.firenze.realtime-database :as rdb]
    [ribelo.doxa :as dx]
    [editscript.core :as es]
-   [editscript.edit :as ese]
-   [applied-science.js-interop :as j]
-   [shadow.resource :as rc]
-   [mannheim.transit :refer [write-transit read-transit]]
-   [cljs.reader :as edn]
-   [promesa.core :as p]))
+   [promesa.core :as p]
+   [editscript.core :as es]))
 
 (defn- -download-store [store]
   (dx/with-dx [dx_ store]
     [(rdb/once [store :data] (fn [data] (swap! dx_ (fn [db] (with-meta data (meta db))))))
      (rdb/once [store :txs ] (fn [m   ] (swap! dx_ (fn [db] (with-meta db m)))))]))
 
+(defn- -download-store-fx [store]
+  (timbre/info :download-store store)
+  (dx/with-dx [dx_ store]
+    (let [ps (-download-store store)
+          k  (enc/merge-keywords [:firebase.download store])]
+      (dx/commit! dx_ [:dx/put [:app.settings/id k] {:promises ps}])
+      (-> (p/all ps)
+          (p/then  (fn [   ] (rf/dispatch [:mannheim.firebase.events/download-store.success store    ])))
+          (p/catch (fn [err] (rf/dispatch [:mannheim.firebase.events/download-store.failure store err])))))))
+
 (rf/reg-fx
  ::download-store
  (fn [store]
-   (timbre/info :download-store store)
-   (dx/with-dx [dx_ store]
-     (let [ps (-download-store store)
-           k  (enc/merge-keywords [:firebase.download store])]
-       (dx/commit! dx_ [:dx/put [:app.settings/id k] {:promises ps}])
-       (-> (p/all ps)
-           (p/then  (fn [   ] (rf/dispatch [:mannheim.firebase.events/download-store.success store    ])))
-           (p/catch (fn [err] (rf/dispatch [:mannheim.firebase.events/download-store.failure store err]))))))))
+   (-download-store-fx store)))
 
 (rf/reg-fx
  ::init-firebase
@@ -45,7 +44,7 @@
         h  (:h  (meta db))
         m  {:t t :tx tx :h h}
         it (iter tx)]
-    (timbre/debug :patch-firebase m)
+    (timbre/debug ::patch-rdb m)
     (rdb/push [store :txs] m)
     (loop []
       (when (.hasNext it)
@@ -82,30 +81,39 @@
           (recur))))))
 
 (defn- -patch-store [store m]
+  (timbre/debug ::patch-store store m)
   (dx/with-dx [dx_ store]
-    (let [{:keys [tx h t]} (meta @dx_)
-          it (iter m)]
-      (loop [valid? false]
-        (enc/cond
-          :if-not tx ((re-frame.registrar/get-handler :fx ::download-store) :market)
-          (and valid? (not (.hasNext it)))
-          nil
-          (and (not valid?) (not (.hasNext it)))
-          (do (timbre/warnf "outdated dx %s" store)
-              (-download-store store))
-          :let [[_ {:keys [tx' h' t']}] (.next it)]
-          (identical? t' t)
-          (recur true)
-          (and valid? (> t' t))
-          (do (dx/patch! dx_ tx' t') (recur valid?))
-          :else (recur valid?))))))
+    (if m
+      (let [{:keys [tx h t]} (meta @dx_)
+            it (iter m)]
+        (loop [valid? false]
+          (enc/cond
+            :if-not tx (-download-store-fx :market)
+            (and valid? (not (.hasNext it)))
+            (timbre/infof "same %s dx version locally and on the server" store)
+            (and (not valid?) (not (.hasNext it)))
+            (do (timbre/warnf "outdated dx %s" store)
+                (-download-store store))
+            :let [[_ {tx' :tx h' :h t' :t}] (.next it)]
+            (identical? t' t)
+            (recur true)
+            (and valid? (> t' t))
+            (do (dx/patch! dx_ tx' t') (recur valid?))
+            :else (recur valid?))))
+      (let [diff (es/get-edits (es/diff {} @dx_ {:algo :quick}))]
+        (timbre/infof "empty rdb store %s, force push" store)
+        (-patch-rdb store (vary-meta @dx_ assoc :tx diff))))))
 
 (rf/reg-fx
  ::patch-store
  (fn [store]
-   (timbre/info :patch-store)
+   (timbre/debug :patch-store)
    (-> (rdb/query [store :txs] [:limit-to-last 128])
        (rdb/once (fn [m] (-patch-store store m))))))
+
+(comment
+  (dx/with-dx [dx_ :market]
+    @dx_))
 
 (rf/reg-fx
  ::sync
@@ -115,6 +123,11 @@
      (dx/listen! @db_ (enc/merge-keywords [:sync/rdb store]) (partial -patch-rdb store)))
    (-> (rdb/query [store :txs] [:limit-to-last 128])
        (rdb/on (fn [m] (-patch-store store m))))))
+
+(comment
+  (-> (rdb/query [:market :txs] [:limit-to-last 128])
+      (rdb/once #(println %)))
+  )
 
 (rf/reg-fx
  ::unsync

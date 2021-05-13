@@ -23,7 +23,7 @@
 
 (defn market-select []
   (let [market-id @(rf/subscribe [::dc-order.sub/market-id])]
-    [:select.mx-2.px-2.py-1.bg-nord-0.text-nord-4.focus:text-nord-4.hover:text-nord-7.outline-none.font-medium.w-32.text-center.rounded.shadow.cursor-pointer.border.border-gray-900.transition.duration-200
+    [:select.mx-2.px-2.py-1.bg-nord-0.text-nord-4.focus:text-nord-4.hover:text-nord-7.outline-none.font-medium.w-32.text-center.rounded.shadow.cursor-pointer.border.border-gray-900.transition.duration-150
      {:value     (or (some-> market-id name) "")
       :on-change #(rf/dispatch [::dc-order.evt/set-market-id (-> % .-target .-value)])}
      (when-not market-id [:option "sklep"])
@@ -82,7 +82,7 @@
                [:div "opcje"]
                [:div.flex.items-center
                 [:> ChevronLeft
-                 {:class    [:transition :duration-200 :easy-in-out :hover:text-nord-7 :-ml-2]
+                 {:class    [:transition :duration-150 :easy-in-out :hover:text-nord-7 :-ml-2]
                   :on-click #(rf/dispatch [::dc-order.evt/ui.groups-settings.select-group
                                            (e/get-substr group-id 0 (- (count group-id) 2))])}]
                 [:div.mx-2.truncate
@@ -152,7 +152,7 @@
                [:div "zamówienie"]
                [:div.flex.items-center
                 [:> ChevronLeft
-                 {:class    [:transition :duration-200 :easy-in-out :hover:text-nord-7 :-ml-2]
+                 {:class    [:transition :duration-150 :easy-in-out :hover:text-nord-7 :-ml-2]
                   :on-click #(rf/dispatch [::dc-order.evt/ui.make-order.select-group
                                            (e/get-substr group-id 0 (- (count group-id) 2))])}]
                 [:div.mx-2.truncate
@@ -200,7 +200,7 @@
         cg-price     (:dc.order/cg-price product)
         vendor       (:dc.order/vendor product)
         cg-stock     (:dc.order/cg-stock product)]
-    [:div.flex.h-full.w-full.transition.duration-200.ease-in-out
+    [:div.flex.h-full.w-full.transition.duration-150.ease-in-out
      {:class [:hover:bg-nord-5]}
      [:div.flex-2.self-center.px-4.py-2.text-left.text-sm.truncate
       product-name]
@@ -244,7 +244,7 @@
       vendor]
      [:div.w-12.self-center.px-4.py-2.text-sm
       [:> Trash2
-       {:class    [:w-4 :h-4 :hover:text-nord-11 :transition :duration-200 :ease-in-out :cursor-pointer]
+       {:class    [:w-4 :h-4 :hover:text-nord-11 :transition :duration-150 :ease-in-out :cursor-pointer]
         :on-click #(rf/dispatch [::dc-order.evt/remove-product eid])}]]]))
 
 (m/find :text-right
@@ -261,7 +261,7 @@
                        :value       value
                        :on-change   #(rf/dispatch-sync (conj evt (-> % .-target .-value)))}]
         icon         (when (seq value)
-                       [:div.text-nord-3.hover:text-nord-11.cursor-pointer.transition-all.duration-200.ease-in-out
+                       [:div.text-nord-3.hover:text-nord-11.cursor-pointer.transition-all.duration-150.ease-in-out
                         (when-not type
                           [:> x-icon
                            {:class    [:absolute :w-4 (if-not align-right? :-ml-5 :-ml-1)]
@@ -279,7 +279,7 @@
      (when (and key (= sort-key key))
        [:div
         [:> ArrowUp
-         {:class [:w-3 :h-3 :ml-2 :mt-1 :transition-transform :duration-200 :ease-in-out]
+         {:class [:w-3 :h-3 :ml-2 :mt-1 :transition-transform :duration-150 :ease-in-out]
           :style {:transform (if (= :desc sort-dir) "rotate(-180deg)")}}]])]))
 
 (defn table-headers []

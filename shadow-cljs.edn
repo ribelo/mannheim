@@ -1,5 +1,6 @@
 ;; shadow-cljs configuration
 {:deps {:aliases [:cljs]}
+ :dev-http {8020 "resources"}
  :builds
  {:electron {:target           :node-script
              :output-to        "resources/electron.js"
@@ -7,7 +8,7 @@
              :compiler-options {:optimizations :simple}}
   :app      {:target     :browser
              :output-dir "resources/public/js"
-             :asset-path "/js"
+             :asset-path "js"
              :modules    {:shared {:entries []}
                           :app    {:init-fn    mannheim.core/init
                                    :depends-on #{:shared}

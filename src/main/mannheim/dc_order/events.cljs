@@ -283,9 +283,8 @@
          {:dispatch-n [[:mannheim.ui.events/data-loading]
                        ^:flush-dom [::read-report-file.read-file market-id (first dialog)]]}))
      {:dispatch [:mannheim.ui.events/add-notification
-                 [:title   nil
-                  :type    :error
-                  :content "nie wybrano sklepu"]]})))
+                 {:type    :error
+                  :content "nie wybrano sklepu"}]})))
 
 #_(rf/reg-event-fx
  ::read-report-file.read-file
@@ -318,17 +317,15 @@
    (timbre/debug ::read-report-file.successful)
    {:dispatch-n [[:mannheim.ui.events/data-loaded]
                  [:mannheim.ui.events/add-notification
-                  [:title   nil
-                   :type    :success
-                   :content (str "poprawnie wczytano plik " file-name)]]]}))
+                  {:type    :success
+                   :content (str "poprawnie wczytano plik " file-name)}]]}))
 
 (rf/reg-event-fx
  ::read-report-file.invalid-data
  (fn [_ [_ file-name]]
    {:dispatch [:mannheim.ui.events/add-notification
-               [:title   nil
-                :type    :error
-                :content (str "nie udało sie wczytać pliku " file-name)]]}))
+               {:type    :error
+                :content (str "nie udało sie wczytać pliku " file-name)}]}))
 
 ;;
 ;; * order

@@ -32,16 +32,6 @@
    [:contractor/id   TaxId]
    [:contractor/name :string]])
 
-(m/rewrite {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6}
-  {:a ?a :b ?b :c ?c :d ?d :as ?m}
-  {& ?m
-   :a ~(+ ?a ?b)
-   :b :swap/dissoc
-   :c ~(+ ?c ?d)
-   :d :swap/dissoc
-   :e :swap/dissoc})
-;; => {:a 3, :c 7}
-
 (defn- -decode-document [doc]
   (m/rewrite doc
     {:document/issue-date      ?date
@@ -73,8 +63,25 @@
    [:document/transfer-date   {:optional true}
     [:maybe :string]]])
 
-(mc/parse [:map [:a :double]] {:a 1.0})
-
 (def ->document (mc/decoder Document (mt/transformer mt/string-transformer mt/strip-extra-keys-transformer)))
 
 (def document? (mc/validator Document))
+
+(defn- -decode-pxec [doc]
+  (m/rewrite doc
+    {:document/id ?did
+     :document/accounting-date ?date
+     :as ?m}
+    {& ?m
+     :document/id [?did "7791906082" ?date]}))
+
+(def PXEC
+  [:map {:decode/string (fn [doc] (-decode-pxec doc))}
+   [:pxec/id :string]
+   [:document/id DocumentId]
+   [:document/accounting-date Date]
+   [:document/transfer-date Date]])
+
+(def ->pxec (mc/decoder PXEC (mt/transformer mt/string-transformer mt/strip-extra-keys-transformer)))
+
+(def pxec? (mc/validator PXEC))

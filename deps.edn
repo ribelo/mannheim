@@ -19,7 +19,8 @@
          meander/epsilon                 {:mvn/version "0.0.602"}
          borkdude/sci                    {:mvn/version "0.2.4"}
          ribelo/firenze                  {:local/root "../ribelo/firenze"}
-         ribelo/doxa                     {:local/root "../ribelo/doxa"}}
+         ribelo/doxa                     {:local/root "../ribelo/doxa"}
+         ribelo/danzig                   {:local/root "../ribelo/danzig"}}
  :aliases
  {:cljs
   {:extra-paths ["src/dev"]

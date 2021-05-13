@@ -5,12 +5,12 @@
    [re-frame.core :as rf]
    [taoensso.timbre :as timbre]
    [mannheim.init :as init]
-   ;; [mannheim.ui :as ui]
+   [mannheim.ui :as ui]
    ))
 
 (defn mount-components []
   (timbre/info :mount-components)
-  ;; (rd/render [#'ui/view] (.getElementById js/document "app"))
+  (rd/render [#'ui/view] (.getElementById js/document "app"))
   )
 
 (defn ^:export init []

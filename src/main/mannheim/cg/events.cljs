@@ -60,17 +60,15 @@
  ::read-cg-file.successful
  (fn [_ [_ file-path]]
    {:dispatch [:mannheim.ui.events/add-notification
-               [:title   nil
-                :type    :success
-                :content (str "poprawnie wczytano plik " file-path)]]}))
+               {:type    :success
+                :content (str "poprawnie wczytano plik " file-path)}]}))
 
 (rf/reg-event-fx
  ::read-cg-file.invalid-data
  (fn [_ [_ file-path]]
    {:dispatch [:mannheim.ui.events/add-notification
-               [:title   nil
-                :type    :error
-                :content (str "nie udało sie wczytać pliku " file-path)]]}))
+               {:type    :error
+                :content (str "nie udało sie wczytać pliku " file-path)}]}))
 
 (comment
   (d/q '[:find [?e ...]
